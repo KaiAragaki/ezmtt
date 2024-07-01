@@ -1,10 +1,10 @@
 Package: ezmtt
-Title: What the Package Does (One Line, Title Case)
+Title: Easy MTT Assay Tidying and Plotting
 Version: 0.0.0.9000
 Authors@R: 
-    person("Kai", "Aragaki", , "adamaragaki@gmail.com", role = c("aut", "cre"),
+    person("Kai", "Aragaki", , "kaiaragaki@proton.me", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-9458-0426"))
-Description: What the package does (one paragraph).
+Description: This package automates the analysis and plotting of standard MTT workflows.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Language: en
