@@ -6,31 +6,21 @@
 #'
 #' @return a `ggplot`
 #' @export
-mtt_plot <- function(mtt, plot_ics = FALSE) {
 
-  drug_conc <- c(min(mtt$drug), max(mtt$drug))
+# mtt is a list of fits
+# will probably need a custom 'condition' list item for each fit
+mtt_plot <- function(fits, plot_ics = FALSE) {
 
-  fit_curve <- mtt |>
-    dplyr::group_by(.data$condition, .data$fit) |>
-    tidyr::nest() |>
-    dplyr::mutate(
-      curve = purrr::map(.data$fit, make_curve, drug_conc)
-    ) |>
-    dplyr::select("condition", "curve") |>
-    tidyr::unnest(.data$curve) |>
-    dplyr::ungroup()
+  curve_data <- do.call(rbind, lapply(fits, get_fit_data))
 
-  plot <- mtt |>
-    ggplot2::ggplot(
-      ggplot2::aes(
-        as.numeric(.data$drug),
-        .data$div,
-        color = .data$condition
-      )
-    ) +
+  plot <- ggplot2::ggplot(
+    curve_data,
+    ggplot2::aes(.data$dose, .data$resp, color = .data$condition)
+  ) +
     ggplot2::geom_point() +
     ggplot2::scale_x_log10() +
-    ggplot2::geom_line(data = fit_curve, ggplot2::aes(.data$x, .data$y))
+    lapply(fits, make_curve_geom)
+
 
   if (plot_ics) {
     ic_annot <- mtt |>
@@ -58,4 +48,11 @@ mtt_plot <- function(mtt, plot_ics = FALSE) {
       )
   }
   plot
+}
+
+make_curve_geom <- function(fit) {
+  ggplot2::geom_function(
+    ggplot2::aes(color = fit$condition),
+    fun = get_curve_eqn(fit)
+  )
 }

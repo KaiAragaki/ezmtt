@@ -5,7 +5,11 @@
 #' @return a `tibble` without any conditions that are `NA`
 #' @noRd
 rm_unassigned_wells <- function(df) {
-  dplyr::filter(df, !is.na(as.character(.data$condition)))
+  dplyr::filter(
+    df,
+    !is.na(as.character(.data$condition)),
+    !is.na(drug)
+  )
 }
 
 #' Subtract background and calculate mean per drug and condition
@@ -16,12 +20,12 @@ rm_unassigned_wells <- function(df) {
 #' @return a `tibble`
 #' @noRd
 subtract_bg_and_get_mean <- function(df) {
-  dplyr::group_by(df, .data$condition, .data$drug) |>
+  df |>
     dplyr::mutate(
       diff = .data$nm562 - .data$nm660,
-      mean = mean(.data$diff)
-    ) |>
-    dplyr::ungroup()
+      mean = mean(.data$diff),
+      .by = "drug"
+    )
 }
 
 #' Divide all differences by lowest concentration
@@ -32,9 +36,10 @@ subtract_bg_and_get_mean <- function(df) {
 #' @return a `tibble`
 #' @noRd
 normalize_to_lowest_conc <- function(df) {
-  dplyr::group_by(df, .data$condition) |>
-    dplyr::mutate(div = .data$diff / .data$mean[which(.data$drug == min(.data$drug))]) |>
-    dplyr::ungroup()
+  df |>
+    dplyr::mutate(
+      div = .data$diff / .data$mean[which(.data$drug == min(.data$drug))]
+    )
 }
 
 #' Model curve, produce plots, and calculate IC per MTT condition
@@ -155,11 +160,23 @@ get_ic <- function(fit, ic_pct) {
 sanitize_drug_conc <- function(drug_conc, quiet = FALSE) {
   if (min(drug_conc) == 0) {
     sorted <- unique(sort(drug_conc))
-    new_low <- (sorted[2]/sorted[3])^4
+    new_low <- (sorted[2] / sorted[3])^4
     drug_conc <- ifelse(drug_conc == 0, new_low, drug_conc)
     if (!quiet) {
       message("Lowest drug concentration is 0, converting to ", new_low)
     }
   }
   drug_conc
+}
+
+# Like sanitize_drug_conc but returns just the new_low
+calc_new_min <- function(drug_conc, quiet = FALSE) {
+  if (min(drug_conc, na.rm = TRUE) != 0) return(min(drug_conc, na.rm = TRUE))
+
+  sorted <- unique(sort(drug_conc))
+  new_low <- (sorted[2] / sorted[3])^4
+  if (!quiet)
+    cli::cli_inform("Lowest drug concentration is 0, converting to {new_low}")
+
+  new_low
 }
