@@ -51,7 +51,7 @@ normalize_to_lowest_conc <- function(df) {
 #' @return A `tibble` with three columns - `ic_value`, `ic_std_err`, and
 #'   `ic_pct`
 get_ic <- function(fit, ic_pct) {
-  if(!is.null(fit)) {
+  if (!is.null(fit)) {
     drc::ED(fit, respLev = ic_pct, display = FALSE) |>
       dplyr::as_tibble() |>
       dplyr::rename(
