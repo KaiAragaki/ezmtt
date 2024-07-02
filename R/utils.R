@@ -42,82 +42,6 @@ normalize_to_lowest_conc <- function(df) {
     )
 }
 
-#' Model curve, produce plots, and calculate IC per MTT condition
-#'
-#' @param df a `data.frame` containing a `condition`, `div`, and `drug` column
-#' @param drug_conc a numeric vector containing drug concentrations of the
-#'   conditions, from left to right
-#' @param ic_pct numeric. The %IC desired, where 25 would represent the
-#'   concentration at which growth was reduced by 25% vs baseline
-#'
-#' @return A `tibble`
-#' @noRd
-fit_mtt <- function(df, drug_conc, ic_pct) {
-  dplyr::group_by(df, .data$condition) |>
-    tidyr::nest() |>
-    dplyr::mutate(
-      fit = purrr::map(.data$data, mtt_model),
-
-      ic = purrr::map(.data$fit, get_ic, ic_pct = ic_pct)
-    ) |>
-    tidyr::unnest(cols = c("ic", "data")) |>
-    dplyr::ungroup()
-}
-
-#' Try to fit a logistic curve to MTT data
-#'
-#' Function will try to fit a 4 parameter log-logistic function. Constraints: Y
-#' is bounded between 0 and 1.
-#'
-#' If the model fails to fit the first time, it will try again without
-#' constraints
-#'
-#' @param data a `data.frame` containing a `div` (dep var.) and `drug` (indep.
-#'   var) column.
-#'
-#' @return  A `drc` object
-mtt_model <- function(data) {
-
-  model_strict <- function(data) {
-    drc::drm(
-      div ~ drug, data = data, fct = drc::LL.4(),
-      lowerl = c(-Inf, 0, -Inf, -Inf),
-      upperl = c(Inf, Inf, 1, Inf)
-    )
-  }
-  model_lax <- function(data) {
-    drc::drm(
-      div ~ drug, data = data, fct = drc::LL.4()
-    )
-  }
-  safe_model_strict <- purrr::safely(model_strict)
-  model <- safe_model_strict(data)
-  if (!is.null(model$result)) {
-    return(model$result)
-  }
-  safe_model_lax <- purrr::safely(model_lax)
-  model <- safe_model_lax(data)
-  model$result
-}
-
-#' Make points for plotting based off a fit
-#'
-#' @param fit a `drc` object
-#' @param drug_conc numeric vector of drug concentrations. Assumes no 0s.
-#' @param length_out number of points to generate. More points = smoother curve.
-#'
-#' @return A `data.frame` of x and y coordinates for a given fit
-#' @noRd
-make_curve <- function(fit, drug_conc, length_out = 1000) {
-  x <- exp(seq(log(min(drug_conc)), log(max(drug_conc)), length.out = length_out))
-  if (!is.null(fit)) {
-    curve <- fit$curve[[1]](x)
-  } else {
-    curve <- NA
-  }
-  data.frame(x = x, y = curve)
-}
-
 #' Get the IC value of a fit at a given percent
 #'
 #' @param fit A `drc` object
@@ -150,26 +74,12 @@ get_ic <- function(fit, ic_pct) {
 #'
 #' \eqn{\frac{SecondSmallest}{ThirdSmallest^4}}
 #'
-#' @param drug_conc numeric vector of drug concentrations, in the order which
-#'   they appear in the section (left to right)
+#' @param drug_conc A numeric vector of drug concentrations
 #'
 #' @param quiet Should conversion from 0 to some small number be done silently?
 #'
-#' @return a numeric vector of the same length and order as input
+#' @return The smallest value, or if 0, a new small value
 #' @noRd
-sanitize_drug_conc <- function(drug_conc, quiet = FALSE) {
-  if (min(drug_conc) == 0) {
-    sorted <- unique(sort(drug_conc))
-    new_low <- (sorted[2] / sorted[3])^4
-    drug_conc <- ifelse(drug_conc == 0, new_low, drug_conc)
-    if (!quiet) {
-      message("Lowest drug concentration is 0, converting to ", new_low)
-    }
-  }
-  drug_conc
-}
-
-# Like sanitize_drug_conc but returns just the new_low
 calc_new_min <- function(drug_conc, quiet = FALSE) {
   if (min(drug_conc, na.rm = TRUE) != 0) return(min(drug_conc, na.rm = TRUE))
 
