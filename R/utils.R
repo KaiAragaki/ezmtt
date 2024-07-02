@@ -66,7 +66,6 @@ get_ic <- function(fit, ic_pct) {
 
 #' Convert 0 to a small enough equivalent
 #'
-#'
 #' @details 0 doesn't behave well with the fitting algorithm. This takes the
 #' user-supplied drug concentrations and converts the 0 value (if it exists) to
 #' a value low enough to approximate 0 without scaring the fitting algorithm too
