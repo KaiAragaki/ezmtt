@@ -10,15 +10,21 @@ mtt_tidy.default <- function(x, ...) {
 
 #' @export
 mtt_tidy.gp <- function(x, ...) {
-  # Check for necessary sections here
-  # Allow user to map custom sections?
-  gplate::gp_serve(x)
+  x <- gplate::gp_serve(x)
+  mtt_tidy(x)
 }
 
 #' @export
 mtt_tidy.data.frame <- function(x, ...) {
-  # Check for necessary cols here
   # Allow user to map custom cols?
+  # Should coerce cols into their proper types
+  # Allow for NULL conditions if included in df?
+  if (any(!c("condition", "drug", "nm562", "nm660") %in% names(x))) {
+    cli::cli_abort(
+      "Data is missing one or more of the following:",
+      "`condition`, `drug`, `nm562`, `nm660`"
+    )
+  }
   x
 }
 
