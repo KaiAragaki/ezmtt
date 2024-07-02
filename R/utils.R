@@ -50,9 +50,7 @@ normalize_to_lowest_conc <- function(df) {
 #'   `ic_pct`
 get_ic <- function(fit, ic_pct) {
 
-  if (is.null(fit)) {
-    return(NA)
-  }
+  if (is.null(fit)) return(NA)
 
   drc::ED(fit, respLev = ic_pct, display = FALSE) |>
     dplyr::as_tibble() |>
