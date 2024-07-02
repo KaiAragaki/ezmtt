@@ -5,11 +5,9 @@
 #' @return a `tibble` without any conditions that are `NA`
 #' @noRd
 rm_unassigned_wells <- function(df) {
-  dplyr::filter(
-    df,
-    !is.na(as.character(.data$condition)),
-    !is.na(drug)
-  )
+  na_cond <- is.na(as.character(df$condition))
+  na_dose <- is.na(as.character(df$dose))
+  df[!(na_cond | na_dose), ]
 }
 
 #' Subtract background and calculate mean per drug and condition
