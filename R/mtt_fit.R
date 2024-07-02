@@ -35,7 +35,7 @@ mtt_fit.spectramax <- function(x, conditions, ...) {
     mtt_fit()
 }
 
-# Data: dataframe with div, drug (numeric, sanitized)
+# Data: dataframe with div, dose (numeric, sanitized)
 .fit <- function(data) {
   data <- data |>
     subtract_bg_and_get_mean() |>
@@ -43,7 +43,7 @@ mtt_fit.spectramax <- function(x, conditions, ...) {
 
   fit <- tryCatch(
     drc::drm(
-      div ~ drug, data = data, fct = drc::LL.4(),
+      div ~ dose, data = data, fct = drc::LL.4(),
       lowerl = c(-Inf, 0, -Inf, -Inf),
       upperl = c(Inf, Inf, 1, Inf)
     ),
@@ -58,7 +58,7 @@ mtt_fit.spectramax <- function(x, conditions, ...) {
   if (is.null(fit)) {
     fit <- tryCatch(
       drc::drm(
-        div ~ drug, data = data, fct = drc::LL.4()
+        div ~ dose, data = data, fct = drc::LL.4()
       ),
       error = function(cond) {
         cli::cli_inform(
@@ -69,7 +69,7 @@ mtt_fit.spectramax <- function(x, conditions, ...) {
     )
   }
 
-  if (is.null(fit)) fit <- stats::lm(div ~ drug, data = data)
+  if (is.null(fit)) fit <- stats::lm(div ~ dose, data = data)
 
   fit
 }

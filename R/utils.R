@@ -2,7 +2,7 @@
 #'
 #' @param df a `data.frame`
 #'
-#' @return a `tibble` without any conditions that are `NA`
+#' @return a `data.frame` without any conditions or doses that are `NA`
 #' @noRd
 rm_unassigned_wells <- function(df) {
   na_cond <- is.na(as.character(df$condition))
@@ -10,9 +10,9 @@ rm_unassigned_wells <- function(df) {
   df[!(na_cond | na_dose), ]
 }
 
-#' Subtract background and calculate mean per drug and condition
+#' Subtract background and calculate mean per dose and condition
 #'
-#' @param df a `data.frame` containing columns `condition`, `drug`, `nm562`, and
+#' @param df a `data.frame` containing columns `condition`, `dose`, `nm562`, and
 #'   `nm660`.
 #'
 #' @return a `tibble`
@@ -22,21 +22,21 @@ subtract_bg_and_get_mean <- function(df) {
     dplyr::mutate(
       diff = .data$nm562 - .data$nm660,
       mean = mean(.data$diff),
-      .by = "drug"
+      .by = "dose"
     )
 }
 
 #' Divide all differences by lowest concentration
 #'
-#' @param df a `data.frame` containing at `diff` (A562-A660), `drug` (numeric
-#'   conc of drug), and `mean` (mean of `diff` per condition and conc)
+#' @param df a `data.frame` containing at `diff` (A562-A660), `dose` (numeric
+#'   conc of drug), and `mean` (mean of `diff` per condition and dose)
 #'
 #' @return a `tibble`
 #' @noRd
 normalize_to_lowest_conc <- function(df) {
   df |>
     dplyr::mutate(
-      div = .data$diff / .data$mean[which(.data$drug == min(.data$drug))]
+      div = .data$diff / .data$mean[which(.data$dose == min(.data$dose))]
     )
 }
 
@@ -65,25 +65,25 @@ get_ic <- function(fit, ic_pct) {
 #' Convert 0 to a small enough equivalent
 #'
 #' @details 0 doesn't behave well with the fitting algorithm. This takes the
-#' user-supplied drug concentrations and converts the 0 value (if it exists) to
+#' user-supplied dose and converts the 0 value (if it exists) to
 #' a value low enough to approximate 0 without scaring the fitting algorithm too
 #' much. Specifically, it converts 0 to:
 #'
 #' \eqn{\frac{SecondSmallest}{ThirdSmallest^4}}
 #'
-#' @param drug_conc A numeric vector of drug concentrations
+#' @param dose A numeric vector of doses
 #'
 #' @param quiet Should conversion from 0 to some small number be done silently?
 #'
 #' @return The smallest value, or if 0, a new small value
 #' @noRd
-calc_new_min <- function(drug_conc, quiet = FALSE) {
-  if (min(drug_conc, na.rm = TRUE) != 0) return(min(drug_conc, na.rm = TRUE))
+calc_new_min <- function(dose, quiet = FALSE) {
+  if (min(dose, na.rm = TRUE) != 0) return(min(dose, na.rm = TRUE))
 
-  sorted <- unique(sort(drug_conc))
+  sorted <- unique(sort(dose))
   new_low <- (sorted[2] / sorted[3])^4
   if (!quiet)
-    cli::cli_inform("Lowest drug concentration is 0, converting to {new_low}")
+    cli::cli_inform("Lowest dose is 0, converting to {new_low}")
 
   new_low
 }

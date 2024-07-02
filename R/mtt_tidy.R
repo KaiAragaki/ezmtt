@@ -19,10 +19,10 @@ mtt_tidy.data.frame <- function(x, ...) {
   # Allow user to map custom cols?
   # Should coerce cols into their proper types
   # Allow for NULL conditions if included in df?
-  if (any(!c("condition", "drug", "nm562", "nm660") %in% names(x))) {
+  if (any(!c("condition", "dose", "nm562", "nm660") %in% names(x))) {
     cli::cli_abort(
       "Data is missing one or more of the following:",
-      "`condition`, `drug`, `nm562`, `nm660`"
+      "`condition`, `dose`, `nm562`, `nm660`"
     )
   }
   x
@@ -30,12 +30,12 @@ mtt_tidy.data.frame <- function(x, ...) {
 
 #' @export
 mtt_tidy.spectramax <- function(x, conditions, ...) {
-  drug_conc <- process_conditions(conditions)
+  dose <- process_conditions(conditions)
 
   df <- x$data[[1]]$data |>
     gplate::gp_sec(
-      "drug",
-      nrow = 4, ncol = 1, labels = drug_conc, wrap = TRUE, advance = FALSE
+      "dose",
+      nrow = 4, ncol = 1, labels = dose, wrap = TRUE, advance = FALSE
     ) |>
     gplate::gp_sec(
       "condition", nrow = 4, ncol = 6, labels = names(conditions)
@@ -43,7 +43,7 @@ mtt_tidy.spectramax <- function(x, conditions, ...) {
 
   df <- df |>
     gplate::gp_serve() |>
-    dplyr::mutate(drug = as.numeric(levels(.data$drug)[.data$drug])) |>
+    dplyr::mutate(dose = as.numeric(levels(.data$dose)[.data$dose])) |>
     rm_unassigned_wells()
 
   # If a condition is NA, needs to be dropped even after removal of values
@@ -114,7 +114,7 @@ process_single_cond_vals <- function(condition) {
   # 'merge' - consider conditions that wraps/spans quadrants. Conditions with a
   # single value may be intentional.
 
-  # Because of that, it's probably better to sanitize drug concentrations
+  # Because of that, it's probably better to sanitize doses
   # outside of a single condition context
   condition
 }
