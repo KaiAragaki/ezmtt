@@ -43,6 +43,7 @@ normalize_to_lowest_conc <- function(df) {
 #'
 #' @return A `data.frame` with three columns - `ic_value`, `ic_std_err`, and
 #'   `ic_pct`
+#' @noRd
 get_ic <- function(fit, ic_pct) {
   if (is.null(fit)) return(NA)
 
