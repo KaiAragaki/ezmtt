@@ -41,10 +41,9 @@ mtt_tidy.spectramax <- function(x, conditions, ...) {
       "condition", nrow = 4, ncol = 6, labels = names(conditions)
     )
 
-  df <- df |>
-    gplate::gp_serve() |>
-    dplyr::mutate(dose = as.numeric(levels(.data$dose)[.data$dose])) |>
-    rm_unassigned_wells()
+  df <- gplate::gp_serve(df)
+  df$dose <- as.numeric(levels(df$dose)[df$dose])
+  df <- rm_unassigned_wells(df)
 
   # If a condition is NA, needs to be dropped even after removal of values
   df$condition <- droplevels(df$condition)
