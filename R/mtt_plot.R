@@ -8,7 +8,6 @@
 #' @export
 
 # mtt is a list of fits
-# will probably need a custom 'condition' list item for each fit
 mtt_plot <- function(fits, plot_ics = FALSE) {
 
   curve_data <- do.call(rbind, lapply(fits, get_fit_data))
