@@ -4,7 +4,6 @@
 # ezmtt
 
 <!-- badges: start -->
-
 <!-- badges: end -->
 
 ezmtt is a package for analyzing MTT assay data - namely, fitting and
@@ -30,21 +29,18 @@ devtools::install_github("KaiAragaki/ezmtt")
 library(ezmtt)
 
 mtt |>
-  mtt_fit(conditions = list(
-    drug_a = c(0, 1, 10, 100, 1000, 10000),
-    drug_b = c(0, 1, 10, 100, 1000, 10000),
-    NA,
-    NA
-  )) |>
+  mtt_fit(
+    conditions = list(
+      drug_a = c(0, 1, 10, 100, 1000, 10000),
+      drug_b = c(0, 1, 10, 100, 1000, 10000),
+      NA,
+      NA
+    ),
+    model = c("ll", "lm")
+  ) |>
   mtt_plot(ic_pct = 50)
 #> Lowest dose is 0, converting to 1e-04
 #> Lowest dose is 0, converting to 1e-04
-#> Warning in sqrt(dEDval %*% varCov %*% dEDval): NaNs produced
-#> Warning in sqrt(dEDval %*% varCov %*% dEDval): NaNs produced
-#> Warning in sqrt(dEDval %*% varCov %*% dEDval): NaNs produced
-#> Warning in sqrt(dEDval %*% varCov %*% dEDval): NaNs produced
-#> Warning in sqrt(diag(varMat)): NaNs produced
-#> Warning in sqrt(diag(varMat)): NaNs produced
 ```
 
 <img src="man/figures/README-example-1.png" width="100%" />
