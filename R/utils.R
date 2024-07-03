@@ -5,7 +5,8 @@
 #' @return a `data.frame` without any conditions or doses that are `NA`
 #' @noRd
 rm_unassigned_wells <- function(df) {
-  na_cond <- is.na(as.character(df$condition))
+  # NA factors are ""
+  na_cond <- df$condition == ""
   na_dose <- is.na(as.character(df$dose))
   df[!(na_cond | na_dose), ]
 }
