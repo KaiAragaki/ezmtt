@@ -1,17 +1,13 @@
-#' Plot MTT results
+#' Plot MTT fits
 #'
-#' @param mtt a `data.frame` output from  `mtt_calc()`
-#' @param plot_ics logical. Should the calculated inhibitor concentrations be
-#'   plotted?
+#' @param mtt a list of fits, usually the output from `mtt_fit`
+#' @param ic_pct Numeric. If NULL, no IC will be plotted. Otherwise, will plot
+#'   `ic_pct`% IC the % IC supplied.
 #'
 #' @return a `ggplot`
 #' @export
-
-# mtt is a list of fits
-mtt_plot <- function(fits, plot_ics = FALSE) {
-
+mtt_plot <- function(fits, ic_pct = NULL) {
   curve_data <- do.call(rbind, lapply(fits, get_fit_data))
-
   plot <- ggplot2::ggplot(
     curve_data,
     ggplot2::aes(.data$dose, .data$resp, color = .data$condition)
@@ -20,30 +16,15 @@ mtt_plot <- function(fits, plot_ics = FALSE) {
     ggplot2::scale_x_log10() +
     lapply(fits, make_curve_geom)
 
-
-  if (plot_ics) {
-    ic_annot <- mtt |>
-      dplyr::group_by(.data$condition) |>
-      dplyr::summarize(
-        ic_value = unique(.data$ic_value),
-        ic_std_err = unique(.data$ic_std_err),
-        ic_pct = unique(.data$ic_pct),
-        ic_fit = unique(.data$fit)
-      ) |>
-      dplyr::mutate(
-        label = paste0("IC", ic_pct, ": ", round(ic_value, 2))
-      ) |>
-      dplyr::mutate(
-        ic_y_fn = purrr::map(.data$ic_fit, \(x) x[[3]][[1]])
-      ) |>
-      dplyr::rowwise() |>
-      dplyr::mutate(ic_y = .data$ic_y_fn(.data$ic_value)[, 1]) |>
-      dplyr::ungroup()
+  if (!is.null(ic_pct)) {
+    ic_df <- make_ic_data(fits, ic_pct)
     plot <- plot +
       ggrepel::geom_label_repel(
-        data = ic_annot,
-        ggplot2::aes(x = .data$ic_value, y = .data$ic_y, label = .data$label),
-        nudge_x = -5
+        data = ic_df,
+        ggplot2::aes(.data$x, .data$y, label = .data$label),
+        nudge_x = -5,
+        show.legend = FALSE,
+        inherit.aes = FALSE
       )
   }
   plot
@@ -54,4 +35,18 @@ make_curve_geom <- function(fit) {
     ggplot2::aes(color = fit$condition),
     fun = get_curve_eqn(fit)
   )
+}
+
+make_ic_data <- function(fits, ic_pct) {
+  ics <- lapply(fits, get_ic, ic_pct = ic_pct)
+  ic_x <- vapply(ics, \(x) x$ic_value, 1)
+  # predict needs data.frames, mapply needs lists
+  temp <- lapply(as.list(ic_x), as.data.frame)
+  ic_y <- mapply(predict, fits, temp, SIMPLIFY = FALSE) |> unlist()
+  ic_labels <- vapply(ics, fmt_ic_label, "")
+  data.frame(x = ic_x, y = ic_y, label = ic_labels)
+}
+
+fmt_ic_label <- function(ic) {
+  paste0("IC", ic$ic_pct, ": ", round(ic$ic_value, 2))
 }
