@@ -10,26 +10,23 @@ rm_unassigned_wells <- function(df) {
   df[!(na_cond | na_dose), ]
 }
 
-#' Subtract background and calculate mean per dose and condition
+#' Subtract background and calculate mean per dose
 #'
-#' @param df a `data.frame` containing columns `condition`, `dose`, `nm562`, and
+#' @param df a `data.frame` containing `dose`, `nm562`, and
 #'   `nm660`.
 #'
-#' @return a `tibble`
+#' @return a `data.frame`
 #' @noRd
 subtract_bg_and_get_mean <- function(df) {
-  df |>
-    dplyr::mutate(
-      diff = .data$nm562 - .data$nm660,
-      mean = mean(.data$diff),
-      .by = "dose"
-    )
+  df$diff <- df$nm562 - df$nm660
+  df$mean <- stats::ave(df$diff, df$dose)
+  df
 }
 
 #' Divide all differences by lowest concentration
 #'
-#' @param df a `data.frame` containing at `diff` (A562-A660), `dose`,
-#'   and `mean` (mean of `diff` per condition and dose)
+#' @param df a `data.frame` containing at `diff` (A562-A660), `dose`, and `mean`
+#'   (mean of `diff` per condition and dose)
 #'
 #' @return a `data.frame`
 #' @noRd
