@@ -42,7 +42,7 @@ make_ic_data <- function(fits, ic_pct) {
   ic_x <- vapply(ics, \(x) x$ic_value, 1)
   # predict needs data.frames, mapply needs lists
   temp <- lapply(as.list(ic_x), as.data.frame)
-  ic_y <- mapply(predict, fits, temp, SIMPLIFY = FALSE) |> unlist()
+  ic_y <- unlist(mapply(stas::predict, fits, temp, SIMPLIFY = FALSE))
   ic_labels <- vapply(ics, fmt_ic_label, "")
   data.frame(x = ic_x, y = ic_y, label = ic_labels)
 }
