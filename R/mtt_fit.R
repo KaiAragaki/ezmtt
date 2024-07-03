@@ -59,7 +59,7 @@ get_curve_eqn <- function(fit) {
   if (inherits(fit, "drc")) return(fit$curve[[1]])
 
   if (inherits(fit, "lm")) {
-    coeffs <- coef(fit)
+    coeffs <- stats::coef(fit)
     return(\(x) coeffs[[1]] + coeffs[[2]] * x)
   }
 }
