@@ -2,19 +2,19 @@
 % Please edit documentation in R/mtt_plot.R
 \name{mtt_plot}
 \alias{mtt_plot}
-\title{Plot MTT results}
+\title{Plot MTT fits}
 \usage{
-mtt_plot(fits, plot_ics = FALSE)
+mtt_plot(fits, ic_pct = NULL)
 }
 \arguments{
-\item{plot_ics}{logical. Should the calculated inhibitor concentrations be
-plotted?}
+\item{ic_pct}{Numeric. If NULL, no IC will be plotted. Otherwise, will plot
+\code{ic_pct}\% IC the \% IC supplied.}
 
-\item{mtt}{a \code{data.frame} output from  \code{mtt_calc()}}
+\item{mtt}{a list of fits, usually the output from \code{mtt_fit}}
 }
 \value{
 a \code{ggplot}
 }
 \description{
-Plot MTT results
+Plot MTT fits
 }

@@ -13,7 +13,7 @@ get_ic(fit, ic_pct)
 concentration at which growth was reduced by 25\% vs baseline}
 }
 \value{
-A \code{tibble} with three columns - \code{ic_value}, \code{ic_std_err}, and
+A \code{data.frame} with three columns - \code{ic_value}, \code{ic_std_err}, and
 \code{ic_pct}
 }
 \description{
