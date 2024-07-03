@@ -10,8 +10,7 @@ mtt_fit.default <- function(x, ...) {
 
 #' @export
 mtt_fit.gp <- function(x, ...) {
-  mtt_tidy(x) |>
-    mtt_fit()
+  mtt_fit(mtt_tidy(x, ...))
 }
 
 #' @export
@@ -19,59 +18,39 @@ mtt_fit.data.frame <- function(x, ...) {
   x <- mtt_tidy(x)
   fits <- tapply(x, ~ condition, .fit)
   names <- names(fits)
-  mapply(
-    \(x, y) {
-      x$condition <- y
-      x
-    },
-    fits, names,
-    SIMPLIFY = FALSE
-  )
+  mapply(\(x, y) {
+    x$condition <- y
+    x
+  },
+  fits, names, SIMPLIFY = FALSE)
 }
 
 #' @export
 mtt_fit.spectramax <- function(x, conditions, ...) {
-  mtt_tidy(x, conditions) |>
-    mtt_fit()
+  mtt_fit(mtt_tidy(x, conditions, ...))
 }
 
-# Data: dataframe with div, dose (numeric, sanitized)
+# Data: data.frame with div, dose (numeric, sanitized)
 .fit <- function(data) {
   data <- data |>
     subtract_bg_and_get_mean() |>
     normalize_to_lowest_conc()
 
-  fit <- tryCatch(
-    drc::drm(
+  tryCatch(
+    return(drc::drm(
       div ~ dose, data = data, fct = drc::LL.4(),
       lowerl = c(-Inf, 0, -Inf, -Inf),
       upperl = c(Inf, Inf, 1, Inf)
-    ),
-    error = function(cond) {
-      cli::cli_inform(
-        "Failed to fit model with strict parameters, relaxing..."
-      )
-      NULL
-    }
+    )),
+    error = \(x) cli::cli_inform("Couldn't fit, relaxing parameters")
   )
 
-  if (is.null(fit)) {
-    fit <- tryCatch(
-      drc::drm(
-        div ~ dose, data = data, fct = drc::LL.4()
-      ),
-      error = function(cond) {
-        cli::cli_inform(
-          "Failed to fit model with lax parameters, using `lm`..."
-        )
-        NULL
-      }
-    )
-  }
+  tryCatch(
+    return(drc::drm(div ~ dose, data = data, fct = drc::LL.4())),
+    error = \(x) cli::cli_inform("Couldn't fit with lax params, using lm")
+  )
 
-  if (is.null(fit)) fit <- stats::lm(div ~ dose, data = data)
-
-  fit
+  stats::lm(div ~ dose, data = data)
 }
 
 get_curve_eqn <- function(fit) {
@@ -89,12 +68,8 @@ get_curve_eqn <- function(fit) {
 
 get_fit_data <- function(fit, fun) {
   stopifnot(inherits(fit, "drc") || inherits(fit, "lm"))
-  if (inherits(fit, "drc")) {
-    data <- fit$data
-  }
-  if (inherits(fit, "lm")) {
-    data <- fit$model
-  }
+  if (inherits(fit, "drc")) data <- fit$data
+  if (inherits(fit, "lm")) data <- fit$model
   colnames(data) <- c("dose", "resp")
   data$condition <- fit$condition
   data
