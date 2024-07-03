@@ -1,4 +1,3 @@
-## code to prepare `mtt` dataset goes here
 library(bladdr)
 library(mop)
 
