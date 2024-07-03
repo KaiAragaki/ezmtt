@@ -21,3 +21,4 @@ Imports:
 Depends:
     R (>= 4.1.0)
 LazyData: true
+URL: https://kaiaragaki.github.io/ezmtt/
