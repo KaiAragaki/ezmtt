@@ -60,9 +60,7 @@ get_curve_eqn <- function(fit) {
 
   if (inherits(fit, "lm")) {
     coeffs <- coef(fit)
-    return(\(x) {
-      coeffs[[1]] + coeffs[[2]] * x
-    })
+    return(\(x) coeffs[[1]] + coeffs[[2]] * x)
   }
 }
 
