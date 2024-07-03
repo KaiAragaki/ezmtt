@@ -39,13 +39,17 @@ make_curve_geom <- function(fit) {
 }
 
 make_ic_data <- function(fits, ic_pct) {
-  ics <- lapply(fits, get_ic, ic_pct = ic_pct)
-  ic_x <- vapply(ics, \(x) x$ic_value, 1)
-  # predict needs data.frames, mapply needs lists
-  temp <- lapply(as.list(ic_x), as.data.frame)
-  ic_y <- unlist(mapply(stats::predict, fits, temp, SIMPLIFY = FALSE))
-  ic_labels <- vapply(ics, fmt_ic_label, "")
-  data.frame(x = ic_x, y = ic_y, label = ic_labels)
+  ics <- lapply(fits, make_ic_datum, ic_pct = ic_pct)
+  do.call(rbind, ics)
+}
+
+make_ic_datum <- function(fit, ic_pct) {
+  if (inherits(fit, "lm")) return(NULL)
+  ic <- get_ic(fit, ic_pct = ic_pct)
+  ic_x <- ic$ic_value
+  ic_y <- predict(fit, data.frame(ic_x))
+  ic_label <- fmt_ic_label(ic)
+  data.frame(x = ic_x, y = ic_y, label = ic_label)
 }
 
 fmt_ic_label <- function(ic) {
