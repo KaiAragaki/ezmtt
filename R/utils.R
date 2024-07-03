@@ -28,16 +28,14 @@ subtract_bg_and_get_mean <- function(df) {
 
 #' Divide all differences by lowest concentration
 #'
-#' @param df a `data.frame` containing at `diff` (A562-A660), `dose` (numeric
-#'   conc of drug), and `mean` (mean of `diff` per condition and dose)
+#' @param df a `data.frame` containing at `diff` (A562-A660), `dose`,
+#'   and `mean` (mean of `diff` per condition and dose)
 #'
-#' @return a `tibble`
+#' @return a `data.frame`
 #' @noRd
 normalize_to_lowest_conc <- function(df) {
-  df |>
-    dplyr::mutate(
-      div = .data$diff / .data$mean[which(.data$dose == min(.data$dose))]
-    )
+  df$div <- df$diff / df$mean[which(df$dose) == min(df$dose)]
+  df
 }
 
 #' Get the IC value of a fit at a given percent
