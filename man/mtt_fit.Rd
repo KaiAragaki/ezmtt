@@ -8,19 +8,24 @@
 \alias{mtt_fit.spectramax}
 \title{Fit an curve through MTT data}
 \usage{
-mtt_fit(x, ...)
+mtt_fit(x, model, ...)
 
-\method{mtt_fit}{default}(x, ...)
+\method{mtt_fit}{default}(x, model = NULL, ...)
 
-\method{mtt_fit}{gp}(x, ...)
+\method{mtt_fit}{gp}(x, model = NULL, ...)
 
-\method{mtt_fit}{data.frame}(x, ...)
+\method{mtt_fit}{data.frame}(x, model = NULL, ...)
 
-\method{mtt_fit}{spectramax}(x, conditions, ...)
+\method{mtt_fit}{spectramax}(x, conditions, model = NULL, ...)
 }
 \arguments{
 \item{x}{An object of class \code{gplate::gp}, \code{data.frame}, or \code{mop::spectramax}.
 See details.}
+
+\item{model}{A character vector of models that should be used to fit the
+data. If NULL, will start with a 4-parameter log-logistic model and fall
+back using a linear model. Options for supplying a vector include NA, "lm",
+and "ll". See details.}
 
 \item{...}{Unused}
 
@@ -35,4 +40,16 @@ Fit an curve through MTT data
 \details{
 If a \code{data.frame} or \code{gplate::gp} is supplied, it should have
 columns \code{condition}, \code{dose}, \code{nm562} and \code{nm660}
+
+This function will first attempt to fit the data using a 4-parameter
+log-logistic model, then use a linear model as a fallback if fitting fails.
+
+The \code{model} argument can be used to specify a model manually by supplying a
+character vector with length equal to the number of \emph{unique} conditions.
+Valid values for the character vector include:
+\itemize{
+\item NA: Fitting will start with log-logistic, fallback on linear
+\item "ll": Only (try to) fit with log-logistic
+\item "lm": Only fit with \code{lm}
+}
 }
