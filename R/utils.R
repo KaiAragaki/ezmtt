@@ -46,19 +46,19 @@ normalize_to_lowest_conc <- function(df) {
 #' @param ic_pct numeric. The %IC desired, where 25 would represent the
 #'   concentration at which growth was reduced by 25% vs baseline
 #'
-#' @return A `tibble` with three columns - `ic_value`, `ic_std_err`, and
+#' @return A `data.frame` with three columns - `ic_value`, `ic_std_err`, and
 #'   `ic_pct`
 get_ic <- function(fit, ic_pct) {
-
   if (is.null(fit)) return(NA)
 
-  drc::ED(fit, respLev = ic_pct, display = FALSE) |>
-    dplyr::as_tibble() |>
-    dplyr::rename(
-      ic_value = "Estimate",
-      ic_std_err = "Std. Error"
-    ) |>
-    dplyr::mutate(ic_pct = ic_pct)
+  ic <- drc::ED(fit, respLev = ic_pct, display = FALSE) |>
+    as.numeric()
+
+  data.frame(
+    ic_value = ic[1],
+    ic_std_err = ic[2],
+    ic_pc = ic_pct
+  )
 }
 
 #' Convert 0 to a small enough equivalent
