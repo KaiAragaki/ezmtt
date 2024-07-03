@@ -31,7 +31,7 @@ subtract_bg_and_get_mean <- function(df) {
 #' @return a `data.frame`
 #' @noRd
 normalize_to_lowest_conc <- function(df) {
-  df$div <- df$diff / df$mean[which(df$dose) == min(df$dose)]
+  df$div <- df$diff / df$mean[which(df$dose == min(df$dose))]
   df
 }
 
