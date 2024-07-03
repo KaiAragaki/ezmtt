@@ -52,7 +52,7 @@ get_ic <- function(fit, ic_pct) {
   data.frame(
     ic_value = ic[1],
     ic_std_err = ic[2],
-    ic_pc = ic_pct
+    ic_pct = ic_pct
   )
 }
 
