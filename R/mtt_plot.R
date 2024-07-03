@@ -1,10 +1,11 @@
 #' Plot MTT fits
 #'
-#' @param mtt a list of fits, usually the output from `mtt_fit`
+#' @param fits a list of fits, usually the output from `mtt_fit`
 #' @param ic_pct Numeric. If NULL, no IC will be plotted. Otherwise, will plot
 #'   `ic_pct`% IC the % IC supplied.
 #'
 #' @return a `ggplot`
+#' @importFrom rlang .data
 #' @export
 mtt_plot <- function(fits, ic_pct = NULL) {
   curve_data <- do.call(rbind, lapply(fits, get_fit_data))

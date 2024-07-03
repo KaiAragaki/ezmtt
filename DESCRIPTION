@@ -16,6 +16,7 @@ Imports:
     ggplot2,
     ggrepel,
     gplate,
+    rlang,
     stats
 Depends:
     R (>= 4.1.0)

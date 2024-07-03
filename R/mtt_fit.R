@@ -1,19 +1,35 @@
+#' Fit an curve through MTT data
+#'
+#' @param x An object of class `gplate::gp`, `data.frame`, or `mop::spectramax`.
+#'   See details.
+#' @param conditions A named list of numerics of length 4. Contains doses per
+#'   quadrant. Names are the drug. If quadrant should be omitted, supply NA.
+#'   Quadrants go from left to right, top to bottom. Identical names are
+#'   allowed.
+#' @param ... Unused
+#'
+#' @details If a `data.frame` or `gplate::gp` is supplied, it should have
+#'   columns `condition`, `dose`, `nm562` and `nm660`
+#'
 #' @export
 mtt_fit <- function(x, ...) {
   UseMethod("mtt_fit")
 }
 
 #' @export
+#' @rdname mtt_fit
 mtt_fit.default <- function(x, ...) {
   cli::cli_abort("No method for class {class(x)}")
 }
 
 #' @export
+#' @rdname mtt_fit
 mtt_fit.gp <- function(x, ...) {
   mtt_fit(mtt_tidy(x, ...))
 }
 
 #' @export
+#' @rdname mtt_fit
 mtt_fit.data.frame <- function(x, ...) {
   x <- mtt_tidy(x)
   fits <- tapply(x, ~ condition, .fit)
@@ -26,6 +42,7 @@ mtt_fit.data.frame <- function(x, ...) {
 }
 
 #' @export
+#' @rdname mtt_fit
 mtt_fit.spectramax <- function(x, conditions, ...) {
   mtt_fit(mtt_tidy(x, conditions, ...))
 }

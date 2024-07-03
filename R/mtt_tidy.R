@@ -1,4 +1,3 @@
-#' @export
 mtt_tidy <- function(x, ...) {
   UseMethod("mtt_tidy")
 }
@@ -15,6 +14,7 @@ mtt_tidy.gp <- function(x, ...) {
 }
 
 #' @export
+#' @importFrom rlang .data
 mtt_tidy.data.frame <- function(x, ...) {
   # Allow user to map custom cols?
   # Should coerce cols into their proper types

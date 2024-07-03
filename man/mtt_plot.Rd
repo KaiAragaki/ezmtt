@@ -7,10 +7,10 @@
 mtt_plot(fits, ic_pct = NULL)
 }
 \arguments{
+\item{fits}{a list of fits, usually the output from \code{mtt_fit}}
+
 \item{ic_pct}{Numeric. If NULL, no IC will be plotted. Otherwise, will plot
 \code{ic_pct}\% IC the \% IC supplied.}
-
-\item{mtt}{a list of fits, usually the output from \code{mtt_fit}}
 }
 \value{
 a \code{ggplot}
