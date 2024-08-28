@@ -3,11 +3,11 @@
 #' @param fits a list of fits, usually the output from `mtt_fit`
 #' @param ic_pct Numeric. If NULL, no IC will be plotted. Otherwise, will plot
 #'   `ic_pct`% IC the % IC supplied.
-#'
+#' @param ... Arguments passed to `drc::ED`
 #' @return a `ggplot`
 #' @importFrom rlang .data
 #' @export
-mtt_plot <- function(fits, ic_pct = NULL) {
+mtt_plot <- function(fits, ic_pct = NULL, ...) {
   curve_data <- do.call(rbind, lapply(fits, get_fit_data))
   plot <- ggplot2::ggplot(
     curve_data,
@@ -18,7 +18,7 @@ mtt_plot <- function(fits, ic_pct = NULL) {
     lapply(fits, make_curve_geom)
 
   if (!is.null(ic_pct)) {
-    ic_df <- make_ic_data(fits, ic_pct)
+    ic_df <- make_ic_data(fits, ic_pct, ...)
     plot <- plot +
       ggrepel::geom_label_repel(
         data = ic_df,
@@ -38,14 +38,14 @@ make_curve_geom <- function(fit) {
   )
 }
 
-make_ic_data <- function(fits, ic_pct) {
-  ics <- lapply(fits, make_ic_datum, ic_pct = ic_pct)
+make_ic_data <- function(fits, ic_pct, ...) {
+  ics <- lapply(fits, make_ic_datum, ic_pct = ic_pct, ...)
   do.call(rbind, ics)
 }
 
-make_ic_datum <- function(fit, ic_pct) {
+make_ic_datum <- function(fit, ic_pct, ...) {
   if (inherits(fit, "lm")) return(NULL)
-  ic <- get_ic(fit, ic_pct = ic_pct)
+  ic <- get_ic(fit, ic_pct = ic_pct, ...)
   ic_x <- ic$ic_value
   ic_y <- predict(fit, data.frame(ic_x))
   ic_label <- fmt_ic_label(ic)
