@@ -4,7 +4,7 @@ GeomMtt <- ggplot2::ggproto(
   "GeomMtt", ggplot2::Geom,
   required_aes = c("x", "y"),
   draw_key = ggplot2::draw_key_path,
-  draw_group = function(data, panel_params, coord) {
+  draw_group = function(data, panel_params, coord, n = 100) {
     ranges <- coord$backtransform_range(panel_params)
 
     # From ggplot2's abline geom:
@@ -33,7 +33,7 @@ GeomMtt <- ggplot2::ggproto(
       model,
       start = start,
       end = end,
-      n = 100,
+      n = n,
       log = TRUE
     )
     coords <- coord$transform(mtt_path, panel_params)
@@ -57,13 +57,14 @@ geom_mtt <- function(mapping = NULL,
                      data = NULL,
                      stat = "identity",
                      position = "identity",
+                     n = 100,
                      na.rm = FALSE,
                      show.legend = NA,
                      inherit.aes = TRUE, ...) {
   ggplot2::layer(
     geom = GeomMtt, mapping = mapping, data = data, stat = stat,
     position = position, show.legend = show.legend, inherit.aes = inherit.aes,
-    params = list(na.rm = na.rm, ...)
+    params = list(n = n, na.rm = na.rm, ...)
   )
 }
 
