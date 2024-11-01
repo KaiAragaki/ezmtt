@@ -3,6 +3,12 @@
 GeomMtt <- ggplot2::ggproto(
   "GeomMtt", ggplot2::Geom,
   required_aes = c("x", "y"),
+  default_aes = aes(
+    colour = "black",
+    linewidth = 1,
+    alpha = 1,
+    linetype = 1L
+  ),
   draw_key = ggplot2::draw_key_path,
   draw_group = function(data, panel_params, coord, n = 1000) {
     ranges <- coord$backtransform_range(panel_params)
@@ -42,7 +48,10 @@ GeomMtt <- ggplot2::ggproto(
       coords$x, coords$y,
       default.units = "native",
       gp = grid::gpar(
-        col = data$colour
+        col = data$colour,
+        lwd = data$linewidth,
+        lty = data$linetype,
+        alpha = data$alpha
       )
     )
   }
