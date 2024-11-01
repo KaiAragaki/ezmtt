@@ -38,7 +38,6 @@ mtt_calc <- function(data,
   rest_cols <- setdiff(names(minimal), group_cols)
 
   group_data <- minimal[, match(group_cols, names(minimal))]
-  rest_data <- minimal[, match(rest_cols, names(minimal))]
   minimal$diff_mean <- ave(minimal$diff, group_data)
   group_cols <- setdiff(group_cols, dose)
 
@@ -48,7 +47,11 @@ mtt_calc <- function(data,
     data <- .calc_div(minimal, dose, out)
   } else {
     group_data <- group_data[, match(group_cols, names(group_data))]
-    data <- tapply(minimal, group_cols, .calc_div, out = out, dose = dose) |>
+    no_group_data <- minimal[, -match(group_cols, names(minimal))]
+    data <- tapply(
+      no_group_data, group_data, .calc_div,
+      out = out, dose = dose
+    ) |>
       array2DF()
   }
   data
