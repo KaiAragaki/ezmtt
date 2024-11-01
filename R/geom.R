@@ -1,3 +1,5 @@
+#' @rdname geom_mtt
+#' @export
 GeomMtt <- ggplot2::ggproto(
   "GeomMtt", ggplot2::Geom,
   required_aes = c("x", "y"),
@@ -27,6 +29,11 @@ GeomMtt <- ggplot2::ggproto(
   }
 )
 
+#' Plot MTT data
+#'
+#' @param na.rm Remove NA values?
+#' @inheritParams ggplot2::layer
+#' @export
 geom_mtt <- function(mapping = NULL,
                      data = NULL,
                      stat = "identity",

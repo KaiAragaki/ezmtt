@@ -4,13 +4,15 @@
 \alias{mtt_plot}
 \title{Plot MTT fits}
 \usage{
-mtt_plot(fits, ic_pct = NULL)
+mtt_plot(fits, ic_pct = NULL, ...)
 }
 \arguments{
 \item{fits}{a list of fits, usually the output from \code{mtt_fit}}
 
 \item{ic_pct}{Numeric. If NULL, no IC will be plotted. Otherwise, will plot
 \code{ic_pct}\% IC the \% IC supplied.}
+
+\item{...}{Arguments passed to \code{drc::ED}}
 }
 \value{
 a \code{ggplot}

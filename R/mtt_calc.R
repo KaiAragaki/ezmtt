@@ -13,6 +13,7 @@
 #' @param out The name of the output column
 #' @param .by Character vector of columns to summarize by. Other columns will be
 #'   dropped
+#' @export
 mtt_calc <- function(data,
                      signal = "nm562",
                      background = "nm660",

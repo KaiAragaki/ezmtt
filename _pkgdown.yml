@@ -5,3 +5,4 @@ reference:
 - title: "Functions"
 - contents:
   - starts_with("mtt")
+  - geom_mtt
