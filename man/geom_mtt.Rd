@@ -6,7 +6,7 @@
 \alias{geom_mtt}
 \title{Plot MTT data}
 \format{
-An object of class \code{GeomMtt} (inherits from \code{Geom}, \code{ggproto}, \code{gg}) of length 4.
+An object of class \code{GeomMtt} (inherits from \code{Geom}, \code{ggproto}, \code{gg}) of length 5.
 }
 \usage{
 GeomMtt
@@ -16,6 +16,7 @@ geom_mtt(
   data = NULL,
   stat = "identity",
   position = "identity",
+  n = 1000,
   na.rm = FALSE,
   show.legend = NA,
   inherit.aes = TRUE,
@@ -69,6 +70,8 @@ to use \code{position_jitter()}, give the position as \code{"jitter"}.
 \link[ggplot2:layer_positions]{layer position} documentation.
 }}
 
+\item{n}{How many line segments should be used to draw an MTT curve?}
+
 \item{na.rm}{Remove NA values?}
 
 \item{show.legend}{logical. Should this layer be included in the legends?
@@ -81,6 +84,8 @@ display.}
 rather than combining with them. This is most useful for helper functions
 that define both data and aesthetics and shouldn't inherit behaviour from
 the default plot specification, e.g. \code{\link[ggplot2:borders]{borders()}}.}
+
+\item{...}{Additional arguments passed to ggplot2::layer params}
 }
 \description{
 Plot MTT data

@@ -15,6 +15,7 @@ Imports:
     drc,
     ggplot2,
     ggrepel,
+    gplate,
     rlang,
     stats
 Remotes:

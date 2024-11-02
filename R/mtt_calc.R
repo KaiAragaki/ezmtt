@@ -38,7 +38,7 @@ mtt_calc <- function(data,
   rest_cols <- setdiff(names(minimal), group_cols)
 
   group_data <- minimal[, match(group_cols, names(minimal))]
-  minimal$diff_mean <- ave(minimal$diff, group_data)
+  minimal$diff_mean <- stats::ave(minimal$diff, group_data)
   group_cols <- setdiff(group_cols, dose)
 
   # Need to find an easy way to mutate with groups

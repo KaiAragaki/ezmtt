@@ -60,6 +60,8 @@ GeomMtt <- ggplot2::ggproto(
 #' Plot MTT data
 #'
 #' @param na.rm Remove NA values?
+#' @param n How many line segments should be used to draw an MTT curve?
+#' @param ... Additional arguments passed to ggplot2::layer params
 #' @inheritParams ggplot2::layer
 #' @export
 geom_mtt <- function(mapping = NULL,

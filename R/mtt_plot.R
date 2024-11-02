@@ -47,7 +47,7 @@ make_ic_datum <- function(fit, ic_pct, ...) {
   if (inherits(fit, "lm")) return(NULL)
   ic <- get_ic(fit, ic_pct = ic_pct, ...)
   ic_x <- ic$ic_value
-  ic_y <- predict(fit, data.frame(ic_x))
+  ic_y <- stats::predict(fit, data.frame(ic_x))
   ic_label <- fmt_ic_label(ic)
   data.frame(x = ic_x, y = ic_y, label = ic_label)
 }
