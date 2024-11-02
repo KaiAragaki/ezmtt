@@ -8,7 +8,7 @@
 #' @param conditions A named list of length 4, where the name is the name of the
 #'   condition, and the values are the doses. If a quadrant of the plate was not
 #'   used, use NA.
-#'
+#' @param ... Additional arguments passed to appropriate methods
 #'
 #' @export
 mtt_tidy <- function(x, ...) {

@@ -9,6 +9,8 @@ mtt_tidy(x, ...)
 \arguments{
 \item{x}{Object to be tidied}
 
+\item{...}{Additional arguments passed to appropriate methods}
+
 \item{conditions}{A named list of length 4, where the name is the name of the
 condition, and the values are the doses. If a quadrant of the plate was not
 used, use NA.}
