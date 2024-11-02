@@ -2,6 +2,8 @@
 <url><loc>https://kaiaragaki.github.io/ezmtt/404.html</loc></url>
 <url><loc>https://kaiaragaki.github.io/ezmtt/LICENSE-text.html</loc></url>
 <url><loc>https://kaiaragaki.github.io/ezmtt/LICENSE.html</loc></url>
+<url><loc>https://kaiaragaki.github.io/ezmtt/articles/index.html</loc></url>
+<url><loc>https://kaiaragaki.github.io/ezmtt/articles/using-ezmtt.html</loc></url>
 <url><loc>https://kaiaragaki.github.io/ezmtt/authors.html</loc></url>
 <url><loc>https://kaiaragaki.github.io/ezmtt/index.html</loc></url>
 <url><loc>https://kaiaragaki.github.io/ezmtt/reference/geom_mtt.html</loc></url>
@@ -10,5 +12,6 @@
 <url><loc>https://kaiaragaki.github.io/ezmtt/reference/mtt_calc.html</loc></url>
 <url><loc>https://kaiaragaki.github.io/ezmtt/reference/mtt_fit.html</loc></url>
 <url><loc>https://kaiaragaki.github.io/ezmtt/reference/mtt_plot.html</loc></url>
+<url><loc>https://kaiaragaki.github.io/ezmtt/reference/mtt_tidy.html</loc></url>
 </urlset>
 
