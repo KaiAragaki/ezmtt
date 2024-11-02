@@ -1,3 +1,16 @@
+#' Tidy mtt data
+#'
+#' A convenience function for tidying mtt data. For data that do not follow the
+#' standard format of 'one condition per quadrant', consider tidying the data
+#' using `gplate`. See the "Using ezmtt" vignette for more information.
+#'
+#' @param x Object to be tidied
+#' @param conditions A named list of length 4, where the name is the name of the
+#'   condition, and the values are the doses. If a quadrant of the plate was not
+#'   used, use NA.
+#'
+#'
+#' @export
 mtt_tidy <- function(x, ...) {
   UseMethod("mtt_tidy")
 }
@@ -38,7 +51,8 @@ mtt_tidy.spectramax <- function(x, conditions, ...) {
       nrow = 4, ncol = 1, labels = dose, wrap = TRUE, advance = FALSE
     ) |>
     gplate::gp_sec(
-      "condition", nrow = 4, ncol = 6, labels = names(conditions)
+      "condition",
+      nrow = 4, ncol = 6, labels = names(conditions)
     )
 
   df <- gplate::gp_serve(df)
@@ -58,8 +72,9 @@ process_conditions <- function(conditions) {
 
 # Identical names are ok
 validate_condition_names <- function(conditions) {
-  if (!is.list(conditions))
+  if (!is.list(conditions)) {
     cli::cli_abort("Conditions must be supplied as a named list")
+  }
 
   if (length(conditions) != 4) {
     cli::cli_abort(
@@ -97,8 +112,9 @@ process_condition_values <- function(conditions) {
 }
 
 process_single_cond_vals <- function(condition) {
-  if (!is.numeric(condition) && !is.na(condition))
+  if (!is.numeric(condition) && !is.na(condition)) {
     cli::cli_abort("Condition values must be numeric.")
+  }
 
   # This only holds if we assume `conditions` can only apply to quadrants
   if (length(condition) > 6) {

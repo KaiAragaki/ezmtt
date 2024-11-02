@@ -19,8 +19,16 @@ Imports:
     rlang,
     stats
 Remotes:
-  KaiAragaki/gplate
+  KaiAragaki/gplate,
+  KaiAragaki/mop
 Depends:
     R (>= 4.1.0)
 LazyData: true
 URL: https://kaiaragaki.github.io/ezmtt/
+Suggests: 
+    knitr,
+    rmarkdown,
+    dplyr,
+    mop,
+    readr
+VignetteBuilder: knitr

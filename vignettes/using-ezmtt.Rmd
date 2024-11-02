@@ -1,0 +1,226 @@
+---
+title: "Using ezmtt"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using ezmtt}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(ezmtt)
+library(readr)
+library(mop)
+```
+
+# Tidying
+
+Typically, you'll start the process with a raw spectramax `.txt` file. It'll look something like this:
+
+```{r}
+mtt_txt <- system.file("extdata", "mtt.txt", package = "ezmtt")
+read_lines(mtt_txt)
+```
+
+The first step is to turn this into a workable object. You can do this by using the `mop::read_spectramax` function:
+
+```{r}
+mtt <- read_spectramax(mtt_txt)
+mtt
+```
+
+This object - a `spectramax` object - will have your data locked away in it. You can make it dump these data in a easy, workable `data.frame` by using `mop::scrub`:
+
+```{r}
+scrub(mtt)
+```
+
+However, notice that there's no annotation to the `data.frame`, experimentally speaking - that is, what the condition of each well is.
+
+
+## A simple case
+There are a couple ways to add annotations to your data. In the simplest case, when you've used a 'single condition per quadrant' layout as denoted in the [protocol](https://kai.quarto.pub/bok/mtt.html#overview), you can simply use `mtt_tidy` on your `spectramax` object. The `conditions` argument will take a named `list` with exactly 4 items. The names signify the condition names, and the values are their doses. If a quadrant wasn't used, supply `NA`:
+
+```{r}
+doses_a <- c(0, 1, 10, 100, 1000, 10000)
+doses_b <- c(0, 1, 2, 4, 8, 16)
+
+tidy <- mtt_tidy(mtt, conditions = list(drug_a = doses_a, drug_b = doses_b, NA, NA))
+
+tidy
+```
+
+## A more elaborate case
+If you've plated something a bit more elaborate, not to worry - there are still ways to use `ezmtt` and your preferred layout, but you'll need to specify it using `gplate`.
+
+`gplate` is a package that introduces a grammar to specify plate layouts. Once you've 'told' `gplate` how the plate is laid out, you can simply run `gplate::serve` to get a nice tidy 'annotated' `data.frame`.
+
+Let's see how it works with an example. Let's assume you have a plate layout with conditions in column 'bands', each 4 replicates long:
+
+```{r echo = FALSE, fig.width = 2, fig.height = 1.33}
+library(gplate)
+gp(wells = 96) |> gp_sec(name = "condition", ncol = 4) |> gp_plot() + gp_mini_theme()
+```
+
+And suppose each of them have different 'dose ramps':
+
+```{r echo = FALSE, fig.width = 2, fig.height = 1.33}
+gp(wells = 96) |>
+  gp_sec("dose", 1, 4, flow = "col",
+    labels = c(
+      0, .01, .1, 1, 10, 100, 1000, 10000,
+      0, 1, 2, 4, 8, 16, 32, 64,
+      0, 3, 6, 9, 12, 15, 18, 21)
+  ) |>
+  gp_plot() +
+  gp_mini_theme()
+```
+
+This setup would unfortunately be impossible with a simple `mtt_tidy`. Fortunately, this is quite simple for `gplate`. `gplate` works by building up layers, or sections, that each form a column of the end data. Generally, you'll start by specifying the broadest characteristics, then the finer details. The broadest detail, of course, is the plate. The easiest way to do this is to pull it right from the `spectramax` object: 
+
+```{r}
+plate <- plate_data(mtt)
+plate
+```
+
+We could use `gplate::gp_serve` on this object to immediately turn it into a `data.frame`, although it wouldn't have any annotations:
+
+```{r}
+gp_serve(plate)
+```
+
+To add annotations, we can use `gplate::gp_sec`:
+
+```{r}
+with_conditions <- plate |>
+  gp_sec(
+    name = "condition", # Name of the column upon `gp_serve`
+    nrow = 8, # Number of rows per condition
+    ncol = 4, # Number of columns per condition
+    labels = c("drug_a", "drug_b", "drug_c"),
+    advance = FALSE # We'll talk about this later
+  )
+```
+
+It can be helpful to tell if we're on the right track in terms of plotting our data. To this end, we can use `gp_plot` to plot sections of our data:
+
+```{r}
+gp_plot(with_conditions, condition)
+```
+
+So far so good!
+
+Now to add doses. You'll notice above I set `advance = FALSE`. `gplate` allows you to pipe calls from `gp_sec` from one into another, essentially forming `nested` layers. However, if you want to supply labels (here, doses) that differ between sections, you'll need to stay at the same layer as those sections. Thus, setting `advance = FALSE` prevents from drilling down a layer.
+
+```{r}
+with_doses <- with_conditions |>
+  gp_sec(
+    name = "dose",
+    nrow = 1, # Each set of technical replicates takes up 1 row...
+    ncol = 4, # ...and spans 4 columns
+    labels = c(
+      0,     0,  0,
+      0.01,  1,  3,
+      0.1,   2,  6,
+      1,     4,  9,
+      10,    8,  12,
+      100,   16, 15,
+      1000,  32, 18,
+      10000, 64, 21
+    )
+  )
+```
+
+We can also plot this - although it's not going to look great, due to `gplate` automatically converting all labels to factors (a design mistake I regret, and one we will have to contend with shortly):
+
+```{r}
+gp_plot(with_doses)
+```
+
+Believe it or not, we're done now - we can serve it:
+
+```{r}
+tidy <- gp_serve(with_doses)
+tidy
+```
+
+This was a rather spartan introduction to `gplate`, so if you have a more elaborate layout that can't be solved with `mtt_tidy`, see the vignettes on the `gplate` [pkgdown](https://kaiaragaki.github.io/gplate/)
+
+# Calculating normalized optical densities
+
+The next step is to subtract the background wavelength (which produces a value I'll call '`diff`) and then divide it by the `diff` of the lowest concentration (usually a negative control) for that particular condition (producing a normalized optical density, or a value I'll call `div`).
+
+Let's tidy our data really quickly:
+
+```{r}
+doses <- c(0, 1, 10, 100, 1000, 10000)
+
+tidy <- mtt_tidy(mtt, conditions = list(drug_a = doses, drug_b = doses, NA, NA))
+
+tidy
+```
+
+And then we can use `mtt_calc` to do all the calculations for us:
+
+```{r}
+calcd <- mtt_calc(
+  data = tidy,
+  signal = "nm562", # column containing signal absorbances
+  background = "nm660", # column containing background absorbances
+  dose = "dose", # column containing dose data
+  out = "div", # desired name of output column
+  .by = "condition" # column(s) to group by
+)
+
+head(calcd)
+```
+
+It's that simple. Simpler, in fact, since most of these arguments can be left as their defaults, making using it look like this in practice:
+
+```{r}
+mtt_calc(tidy, .by = "condition") |>
+  head()
+```
+
+# Fitting and plotting data
+
+Finally, to plot our data, we can use the included custom geom `geom_mtt`. This will automatically try to fit these data with a four-parameter log-logistic function with reasonable constraints (`drc::LL.4`), and will gradually relax those constraints if it fails to fit.
+
+```{r}
+library(ggplot2)
+ggplot(calcd, aes(dose, div, color = condition)) +
+  geom_mtt() +
+  geom_point() +
+  coord_trans("log10") +
+  scale_x_continuous(breaks = c(0.01, 1, 10, 100, 1000, 10000), minor_breaks = NULL)
+```
+
+Hmm - it looks like `drug_b` isn't really having an effect, but it's still being fit with a `LL.4` model. We can override that by providing a new column to our data that specifies which model should be used for each curve.
+
+```{r}
+library(dplyr)
+calcd <- calcd |>
+  mutate(
+    model = if_else(condition == "drug_b", "lm", NA)
+  )
+```
+
+Now we can supply `model` as the `model` aesthetic to `geom_mtt`:
+
+```{r}
+ggplot(calcd, aes(dose, div, color = condition)) +
+  geom_mtt(aes(model = model)) +
+  geom_point() +
+  coord_trans("log10") +
+  scale_x_continuous(breaks = c(0.01, 1, 10, 100, 1000, 10000), minor_breaks = NULL)
+```
+
+Now note that `drug_b` is fit linearly (although it looks curved due to the distortion of the logarithmic plot) and `drug_a` is fit with `LL.4`.
+

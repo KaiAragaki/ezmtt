@@ -4,6 +4,7 @@ GeomMtt <- ggplot2::ggproto(
   "GeomMtt", ggplot2::Geom,
   required_aes = c("x", "y"),
   default_aes = ggplot2::aes(
+    model = NA,
     colour = "black",
     linewidth = 1,
     alpha = 1,
