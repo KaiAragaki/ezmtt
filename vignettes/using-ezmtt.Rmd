@@ -230,12 +230,13 @@ If we want to add IC50s (or any other IC percentage), we can use `stat_ic_mtt`. 
 
 Let's look at some examples:
 
-```{r}
+```{r warning = FALSE}
 ggplot(calcd, aes(dose, div, color = condition)) +
   geom_mtt(aes(model = model)) +
   stat_ic_mtt(
     geom = "hline",
-    aes(model = model, yintercept = after_stat(y), ic = 50)
+    aes(model = model, yintercept = after_stat(y)),
+    ic = 50
   ) +
   geom_point() +
   coord_trans("log10") +
@@ -246,7 +247,7 @@ Here, we plot the data as a `geom_hline` by setting `geom = "hline"`. `geom_hlin
 
 What about a label?
 
-```{r}
+```{r warning = FALSE}
 ggplot(calcd, aes(dose, div, color = condition)) +
   geom_mtt(aes(model = model)) +
   stat_ic_mtt(
@@ -273,7 +274,7 @@ Here, since `stat_ic_mtt` relies on the x and y data to fit a curve (in order to
 
 The nice thing about this setup is you can otherwise treat these IC50 annotations as regular geoms, styling and all, allowing for more creative freedom:
 
-```{r}
+```{r warning = FALSE}
 library(ggsci)
 ggplot(calcd, aes(dose, div, color = condition)) +
   stat_ic_mtt(
@@ -298,7 +299,7 @@ ggplot(calcd, aes(dose, div, color = condition)) +
   coord_trans("log10") +
   scale_x_continuous(
     breaks = c(0.0001, 1, 10, 100, 1000, 10000),
-    labels = c(0, "1nM", "10", "100", "1uM", "10uM"),
+    labels = c(0, "1nM", "10", "100", "1uM", "10"),
     minor_breaks = NULL) +
   theme_minimal() +
   scale_color_nejm() +
