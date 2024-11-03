@@ -199,7 +199,7 @@ ggplot(calcd, aes(dose, div, color = condition)) +
   geom_mtt() +
   geom_point() +
   coord_trans("log10") +
-  scale_x_continuous(breaks = c(0.01, 1, 10, 100, 1000, 10000), minor_breaks = NULL)
+  scale_x_continuous(breaks = c(0.0001, 1, 10, 100, 1000, 10000), minor_breaks = NULL)
 ```
 
 Hmm - it looks like `drug_b` isn't really having an effect, but it's still being fit with a `LL.4` model. We can override that by providing a new column to our data that specifies which model should be used for each curve.
@@ -219,8 +219,89 @@ ggplot(calcd, aes(dose, div, color = condition)) +
   geom_mtt(aes(model = model)) +
   geom_point() +
   coord_trans("log10") +
-  scale_x_continuous(breaks = c(0.01, 1, 10, 100, 1000, 10000), minor_breaks = NULL)
+  scale_x_continuous(breaks = c(0.0001, 1, 10, 100, 1000, 10000), minor_breaks = NULL)
 ```
 
 Now note that `drug_b` is fit linearly (although it looks curved due to the distortion of the logarithmic plot) and `drug_a` is fit with `LL.4`.
 
+If we want to add IC50s (or any other IC percentage), we can use `stat_ic_mtt`. `stat_ic_mtt`, as a stat, allows for some flexibility with how it's displayed, since it's largely focused on calculating the value, then letting you plot it however you want.
+
+`stat_ic_mtt` calculates 2 values - x, and y. The x is the IC50 value, and the y is the middle value. You might expect that to be at 0.50, but that's not always the case. If a fit has a particularly high baseline (meaning it does not go all the way down to 0), the baseline could be significantly different from 0.5.
+
+Let's look at some examples:
+
+```{r}
+ggplot(calcd, aes(dose, div, color = condition)) +
+  geom_mtt(aes(model = model)) +
+  stat_ic_mtt(
+    geom = "hline",
+    aes(model = model, yintercept = after_stat(y), ic = 50)
+  ) +
+  geom_point() +
+  coord_trans("log10") +
+  scale_x_continuous(breaks = c(0.0001, 1, 10, 100, 1000, 10000), minor_breaks = NULL)
+```
+
+Here, we plot the data as a `geom_hline` by setting `geom = "hline"`. `geom_hline` needs a `yintercept` aesthetic, so we give it the value of `y` after `stat_ic_mtt` calculates it by using `stat_ic_mtt`. 
+
+What about a label?
+
+```{r}
+ggplot(calcd, aes(dose, div, color = condition)) +
+  geom_mtt(aes(model = model)) +
+  stat_ic_mtt(
+    geom = "hline",
+    aes(model = model, yintercept = after_stat(y), ic = 50)
+  ) +
+  stat_ic_mtt(
+    geom = "text",
+    aes(
+      model = model,
+      label = round(after_stat(x), 2),
+      x = stage(dose, after_stat = x),
+      y = stage(div, after_stat = y),
+      ic = 50
+    ),
+    color = "black"
+  ) +
+  geom_point() +
+  coord_trans("log10") +
+  scale_x_continuous(breaks = c(0.0001, 1, 10, 100, 1000, 10000), minor_breaks = NULL)
+```
+
+Here, since `stat_ic_mtt` relies on the x and y data to fit a curve (in order to figure out what the IC50 is), using `after_stat` won't work. We use `stage`, which pulls data from our original data's `dose` column to do the calculation, but returns the stat's `x` value for `geom_text` to use. The same applies for `y`.
+
+The nice thing about this setup is you can otherwise treat these IC50 annotations as regular geoms, styling and all, allowing for more creative freedom:
+
+```{r}
+library(ggsci)
+ggplot(calcd, aes(dose, div, color = condition)) +
+  stat_ic_mtt(
+    geom = "vline",
+    aes(model = model, xintercept = after_stat(x), ic = 50),
+    linetype = 2, color = "black"
+  ) +
+  stat_ic_mtt(
+    geom = "text",
+    aes(
+      model = model,
+      label = round(after_stat(x), 2),
+      x = stage(dose, after_stat = x),
+      y = stage(div, after_stat = 0),
+      ic = 50
+    ),
+    hjust = 1, vjust = 0,
+    color = "black"
+  ) +
+  geom_mtt(aes(model = model)) +
+  geom_point() +
+  coord_trans("log10") +
+  scale_x_continuous(
+    breaks = c(0.0001, 1, 10, 100, 1000, 10000),
+    labels = c(0, "1nM", "10", "100", "1uM", "10uM"),
+    minor_breaks = NULL) +
+  theme_minimal() +
+  scale_color_nejm() +
+  theme(legend.position = "bottom") +
+  labs(x = "Dose", y = "Normalized OD", color = "Drug")
+```

@@ -14,37 +14,16 @@ GeomMtt <- ggplot2::ggproto(
   draw_group = function(data, panel_params, coord, n = 1000) {
     ranges <- coord$backtransform_range(panel_params)
 
-    # From ggplot2's abline geom:
-    if (coord$clip == "on" && coord$is_linear()) {
-      # Ensure the line extends well outside the panel to avoid visible line
-      # ending for thick lines
-      ranges$x <- ranges$x + c(-1, 1) * diff(ranges$x)
-    }
-
     # Can't have negative concentrations anyway
     if (ranges$x[1] <= 0) ranges$x[1] <- sort(unique(data$x))[2] / 10
 
-    model <- unique(data$model)
-    if (length(model) > 1) {
-      cli::cli_warn(
-        "Found more than one unique model per group, using the first"
-      )
-      model <- select_model(model[1])
-    }
+    model <- select_model(get_one_aes(data$model))
+    fit <- fit_mtt_model(data$x, data$y, model)
 
     start <- ranges$x[1]
     end <- ranges$x[2]
-    mtt_path <- create_mtt(
-      data$x,
-      data$y,
-      model,
-      start = start,
-      end = end,
-      n = n,
-      log = TRUE
-    )
+    mtt_path <- create_mtt(fit = fit, start = start, end = end, n = n)
     coords <- coord$transform(mtt_path, panel_params)
-    first_row <- coords[1, , drop = FALSE]
     grid::polylineGrob(
       coords$x, coords$y,
       default.units = "native",
@@ -57,6 +36,58 @@ GeomMtt <- ggplot2::ggproto(
     )
   }
 )
+
+StatIcMtt <- ggplot2::ggproto(
+  "StatIcMtt",
+  ggplot2::Stat,
+  # X and Y here stand for conc and div, not for the ultimate position of the
+  # ICs
+  required_aes = c("x", "y"),
+  # While the IC can be parameterized using only one row, it needs many rows to
+  # fit it. So it actually should be compute_group instead of compute_panel.
+  compute_group = function(data, scales, ic = 50) {
+    # Turn a model name into an actual model
+    model <- select_model(get_one_aes(data$model))
+
+    # Fit the model (in the case of flexible_model, choose and then fit the
+    # model)
+    fit <- fit_mtt_model(data$x, data$y, model)
+
+    ic <- get_one_aes(ic)
+    data <- make_ic_datum(fit, ic)
+    data
+  },
+  default_aes = ggplot2::aes(ic = 50, model = NA)
+)
+
+#' Plot MTT data
+#'
+#' @param ic The IC percentage that should be calculated
+#' @param ... Additional arguments passed to ggplot2::layer params
+#' @inheritParams ggplot2::layer
+#' @export
+stat_ic_mtt <- function(mapping = NULL,
+                        data = NULL,
+                        geom = "point",
+                        position = "identity",
+                        ...,
+                        ic = 50,
+                        show.legend = NA,
+                        inherit.aes = TRUE) {
+  ggplot2::layer(
+    data = data,
+    mapping = mapping,
+    stat = StatIcMtt,
+    geom = geom,
+    position = position,
+    show.legend = show.legend,
+    inherit.aes = inherit.aes,
+    params = list(
+      ic = ic,
+      ...
+    )
+  )
+}
 
 #' Plot MTT data
 #'
@@ -80,23 +111,17 @@ geom_mtt <- function(mapping = NULL,
   )
 }
 
-create_mtt <- function(x,
-                       y,
-                       model,
+fit_mtt_model <- function(x, y, model) {
+  model(data.frame(conc = x, div = y))
+}
+
+create_mtt <- function(fit,
                        start,
                        end,
-                       n = 1000,
-                       log = TRUE) {
-  if (log) {
-    .x <- exp(seq(log(start), log(end), length.out = n))
-  } else {
-    .x <- seq(start, end, length.out = n)
-  }
-
-  data <- data.frame(conc = x, div = y)
-  fit <- model(data)
+                       n = 1000) {
+  x <- exp(seq(log(start), log(end), length.out = n))
   eq <- get_curve_eqn(fit)
-  data.frame(x = .x, y = eq(.x))
+  data.frame(x = x, y = eq(x))
 }
 
 flexible_model <- function(data) {
@@ -144,4 +169,13 @@ select_model <- function(model) {
   if (model == "lm") {
     return(lm_mtt)
   }
+}
+
+get_one_aes <- function(aes) {
+  aes <- unique(aes)
+  if (length(aes) > 1) {
+    cli::cli_warn("Found >1 unique aes per group, using first")
+    aes <- aes[1]
+  }
+  aes
 }

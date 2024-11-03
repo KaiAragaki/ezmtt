@@ -30,5 +30,6 @@ Suggests:
     rmarkdown,
     dplyr,
     mop,
-    readr
+    readr,
+    ggsci
 VignetteBuilder: knitr

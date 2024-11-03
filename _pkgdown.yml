@@ -6,3 +6,4 @@ reference:
 - contents:
   - starts_with("mtt")
   - geom_mtt
+  - stat_ic_mtt
