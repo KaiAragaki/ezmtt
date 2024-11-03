@@ -29,7 +29,7 @@ GeomMtt <- ggplot2::ggproto(
       cli::cli_warn(
         "Found more than one unique model per group, using the first"
       )
-      model <- model[1]
+      model <- select_model(model[1])
     }
 
     start <- ranges$x[1]
@@ -87,8 +87,6 @@ create_mtt <- function(x,
                        end,
                        n = 1000,
                        log = TRUE) {
-  model <- select_model(model)
-
   if (log) {
     .x <- exp(seq(log(start), log(end), length.out = n))
   } else {
