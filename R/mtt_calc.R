@@ -50,7 +50,8 @@ mtt_calc <- function(data,
     no_group_data <- minimal[, -match(group_cols, names(minimal))]
     data <- tapply(
       no_group_data, group_data, .calc_div,
-      out = out, dose = dose
+      out = out, dose = dose,
+      simplify = FALSE
     ) |>
       array2DF()
   }
