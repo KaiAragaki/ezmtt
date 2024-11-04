@@ -58,6 +58,13 @@ mtt_calc <- function(data,
 }
 
 .calc_div <- function(data, dose, out) {
+  # tapply runs all combinations of factors, even ones that have no combinations
+  # This gets ahead of that by returning a NULL `data.frame` of appropriate
+  # size. Otherwise, it'll freak out when trying to take the min of NULLy
+  if (nrow(data) == 0) {
+    data[[out]] <- numeric(0)
+    return(data)
+  }
   smallest_dose_index <- which(data[[dose]] == min(data[[dose]]))[1]
   div <- data$diff / data$diff_mean[smallest_dose_index]
   data[[out]] <- div
